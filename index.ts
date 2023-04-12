@@ -12,7 +12,7 @@ canvas.style.border = "1px solid #000"
 
 interface Shape {
     draw(): void;
-    select(xmouse:number, ymouse:number):boolean
+   
 }
 
 enum ShapeTypes {
@@ -36,18 +36,7 @@ class Rectangle implements Shape {
         ctx!.shadowOffsetY = 5
         ctx?.fillRect(this.x, this.y, this.width, this.height)
     }
-    select(xmouse:number, ymouse:number):boolean {
-        const distance = Math.sqrt(
-            (xmouse - this.x) * (xmouse - this.x)
-            +
-            (ymouse - this.y) * (ymouse - this.y)
-        )
-        if(distance < this.width){
-            return false
-        }else {
-            return true
-        }
-    }
+    
 }
 
 class Circle implements Shape {
@@ -68,18 +57,7 @@ class Circle implements Shape {
         ctx?.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
         ctx?.fill();
     }  
-    select(xmouse:any, ymouse:any): boolean {
-        const distance = (
-            (xmouse - this.x) * (xmouse - this.x)
-            +
-            (ymouse - this.y) * (ymouse - this.y)
-        )
-        if(distance < this.radius){
-            return false
-        }else {
-            return true
-        }
-    }
+   
 }
 
 const shapes: Shape[] = [];
@@ -125,16 +103,35 @@ circleBtn.addEventListener("click", () => {
 
 
 
+// function selectShapes(selectionX: number, selectionY: number, selectionWidth: number, selectionHeight: number): Shape[] {
+//     const selectedShapes: Shape[] = [];
 
-canvas.addEventListener("click", (e) => {
-    const rect = canvas.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-    console.log(select(x,y))
-})
+//     for (const shape of shapes) {
+//         if (shape instanceof Rectangle) {
+//             const rect = shape;
+//             const left = rect.x;
+//             const right = rect.x + rect.width;
+//             const top = rect.y;
+//             const bottom = rect.y + rect.height;
 
+//             if (left < selectionX + selectionWidth &&
+//                 right > selectionX &&
+//                 top < selectionY + selectionHeight &&
+//                 bottom > selectionY) {
+//                 selectedShapes.push(shape);
+//             }
+//         } else if (shape instanceof Circle) {
+//             const circle = shape;
+//             const distance = Math.sqrt(
+//                 (selectionX - circle.x) * (selectionX - circle.x) +
+//                 (selectionY - circle.y) * (selectionY - circle.y)
+//             );
 
-selectBtn.addEventListener("click", (event) => {
-    
-})
+//             if (distance < circle.radius) {
+//                 selectedShapes.push(shape);
+//             }
+//         }
+//     }
 
+//     return selectedShapes
+// }
