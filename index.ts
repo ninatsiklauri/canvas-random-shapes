@@ -1,125 +1,84 @@
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const ctx = canvas.getContext("2d");
-const rectBtn = document.getElementById("rectBtn") as HTMLButtonElement;
-const circBtn = document.getElementById("circleBtn") as HTMLButtonElement;
+const ctx = canvas.getContext("2d")
 
 
 canvas.width = 600;
-canvas.height = 600;
-canvas.style.border = "1px solid #000";
+canvas.height = 400;
+canvas.style.border = "1px solid #000"
+let startBackgroundColor = "white"
+
+ctx!.fillStyle = startBackgroundColor
+ctx?.fillRect(0,0,canvas.width, canvas.height)
+
+let drawColor: string = "black"
+let drawWidth:number = 2
+let isDrawing:boolean = false
+
+let restoreArray: any[] = []
+let index = -1
+
+canvas.addEventListener("touchstart", start, false)
+canvas.addEventListener("touchmove", draw, false)
+canvas.addEventListener("mousedown", start, false)
+canvas.addEventListener("mousemove", draw, false)
 
 
-interface Shape{
-    draw():void;
+canvas.addEventListener("touchend", stop, false)
+canvas.addEventListener("mouseup", stop, false)
+canvas.addEventListener("mouseout", stop, false)
+
+
+function start(e:any) {
+    isDrawing = true;
+    ctx?.beginPath()
+    ctx?.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
+    e.preventDefault()
 }
-
-
-enum ShapeTypes {
-    Rect = 1,
-    Circle = 2,
-}
-
-
-const shapes: Shape[] = [];
-
-
-class Rectangle implements Shape{
-    constructor(
-        public x:number,
-        public y:number,
-        public width:number,
-        public height:number,
-        public color:string,
-    ) {};
-
-    draw(): void {
-        ctx?.beginPath();
-        ctx!.fillStyle = this.color;
-        ctx?.fillRect(this.x, this.y, this.width, this.height);
-        ctx?.closePath();
-    };
-}
-
-
-class Circle implements Shape{
-    constructor(
-        public x:number,
-        public y:number,
-        public radius:number,
-        public color:string,
-    ) {};
-
-    draw(): void {
-        ctx?.beginPath();
-        ctx!.fillStyle = this.color;
-        ctx?.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        ctx?.fill();
-        ctx?.closePath();
-    };
-}
-
-
-class DefaultShape{
-    constructor(
-        public x:number,
-        public y:number,
-        public width:number,
-        public height:number,
-        public color:string,
-    ) {};
-
-    draw(): void {
-        ctx?.beginPath();
-        ctx!.fillStyle = this.color;
-        ctx?.fillRect(this.x, this.y, this.width, this.height);
-        ctx?.closePath();
-    };
-}
-
-let defaultShape = new DefaultShape(5,5,20,20, "red");
-defaultShape.draw();
-
-
-
-function generateRandomShape(shapeType: ShapeTypes):Shape {
-    let shape: Shape;
-    const randomY = (Math.floor(Math.random() * canvas.width));
-    const randomX:number =( Math.floor(Math.random() * canvas.height));
-    const color:string = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
-
-
-    switch (shapeType) {
-        case ShapeTypes.Rect:
-            const minWidthAndHeight: number = 25
-            const width:number = Math.floor(Math.random() * 100) + minWidthAndHeight;
-            const height:number = Math.floor(Math.random() * 100) + minWidthAndHeight;
-            shape = new Rectangle(randomX, randomY, width, height, color);
-            break;
-        case ShapeTypes.Circle:
-            const minRadius:number = 25;
-            const radius:number = Math.floor(Math.random() * 50) + minRadius;
-            shape = new Circle(randomX, randomY, radius, color); 
-            break;
-        default:
-            throw new Error();
+function draw(e:any) {
+    if(isDrawing) {
+        ctx?.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop)
+        ctx!.strokeStyle = drawColor;
+        ctx!.lineWidth = drawWidth
+        ctx!.lineCap = "round"
+        ctx!.lineJoin = "round"
+        ctx?.stroke()
     }
-    return shape;
+    e.preventDefault()
+}
+
+function stop(e:any) {
+    if(isDrawing){
+        ctx?.stroke()
+        ctx?.closePath()
+    isDrawing = false;
+
+    }
+    e.preventDefault()
+    if(e.type != "mouseout"){
+        restoreArray.push(ctx!.getImageData(0, 0, canvas.width, canvas.height))
+        index += 1  
+    }
+}
+
+function changeColor(element:any){
+    drawColor = element.style.background
 }
 
 
-function drawRandomShape(shapeType:ShapeTypes) {
-    shapes.push(generateRandomShape(shapeType));    
-    shapes.forEach((el)=> {
-        el.draw();
-    })
+function clearCanvas() {
+    ctx!.fillStyle = startBackgroundColor;
+    ctx?.clearRect(0,0, canvas.width, canvas.height)
+    ctx!.fillRect(0,0, canvas.width, canvas.height)
+    restoreArray = []
+    index = -1
 }
 
-
-rectBtn.addEventListener("click", (e) => {
-    drawRandomShape(ShapeTypes.Rect)
-});
-
-
-circBtn.addEventListener("click", () => {
-    drawRandomShape(ShapeTypes.Circle)
-});
+function undoLast() {
+    if(index <= 0 ) {
+        clearCanvas()
+    }else{
+        index -= 1;
+        restoreArray.pop()
+        ctx!.putImageData(restoreArray[index], 0, 0)
+    }
+}
